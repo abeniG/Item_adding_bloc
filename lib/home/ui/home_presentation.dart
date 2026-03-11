@@ -1,8 +1,5 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:simple_bloc_example/data/mock/item_mock.dart';
 import 'package:simple_bloc_example/data/model/item_model.dart';
 import 'package:simple_bloc_example/home/bloc/home_bloc.dart';
 import 'package:simple_bloc_example/home/ui/form.dart';
@@ -17,23 +14,27 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final HomeBloc homeBloc = HomeBloc();
+
   bool isLoading = true;
-  TextEditingController nameController = TextEditingController();
-  TextEditingController priceController = TextEditingController();
-  TextEditingController descriptionController = TextEditingController();
-  TextEditingController imageController = TextEditingController();
+
+  final nameController = TextEditingController();
+  final priceController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final imageController = TextEditingController();
 
   @override
   void initState() {
     homeBloc.add(HomeItemsLoadedEvent());
+
     Future.delayed(
-      Duration(seconds: 3),
+      const Duration(seconds: 3),
       () {
         setState(() {
           isLoading = false;
         });
       },
     );
+
     super.initState();
   }
 
@@ -43,30 +44,39 @@ class _HomeState extends State<Home> {
     priceController.dispose();
     imageController.dispose();
     descriptionController.dispose();
+
     super.dispose();
+  }
+
+  void clearForm() {
+    nameController.clear();
+    priceController.clear();
+    imageController.clear();
+    descriptionController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'HOME PAGE',
-        ),
+        title: const Text('HOME PAGE'),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
         bloc: homeBloc,
         builder: (context, state) {
-          switch (state) {
-            case HomeItemsLoadedState():
-              final successState = HomeItemsLoadedState(item: mockItems);
-              return mockItems.isEmpty
-                  ? const Center(child: Text('NO ITEMS FOUND'))
-                  : ItemTile(homeBloc: homeBloc);
-            default:
+          if (state is HomeItemsLoadedState) {
+            if (state.item.isEmpty) {
+              return const Center(child: Text('NO ITEMS FOUND'));
+            }
+
+            return ItemTile(
+              items: state.item,
+              homeBloc: homeBloc,
+            );
           }
+
           return Center(
             child: isLoading
                 ? const CircularProgressIndicator()
@@ -77,41 +87,46 @@ class _HomeState extends State<Home> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  content: ItemForm(
-                    nameController: nameController,
-                    priceController: priceController,
-                    descriptionController: descriptionController,
-                    imageController: imageController,
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                content: ItemForm(
+                  nameController: nameController,
+                  priceController: priceController,
+                  descriptionController: descriptionController,
+                  imageController: imageController,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                        onPressed: () {
-                          homeBloc.add(HomeItemsAddedEvent(
-                              item: Item(
-                                  name: nameController.value.text.trim(),
-                                  description:
-                                      descriptionController.value.text.trim(),
-                                  imageUrl: imageController.value.text.trim(),
-                                  price: double.parse(
-                                      priceController.value.text.trim()))));
-                          print('Saved ${nameController.text}');
-                          Navigator.pop(context);
-                          nameController.text = '';
-                          priceController.text = '';
-                          imageController.text = '';
-                          descriptionController.text = '';
-                        },
-                        child: const Text('Save'))
-                  ],
-                );
-              });
+                  TextButton(
+                    onPressed: () {
+                      final price =
+                          double.tryParse(priceController.text.trim()) ?? 0;
+
+                      homeBloc.add(
+                        HomeItemsAddedEvent(
+                          item: Item(
+                            name: nameController.text.trim(),
+                            description: descriptionController.text.trim(),
+                            imageUrl: imageController.text.trim(),
+                            price: price,
+                          ),
+                        ),
+                      );
+
+                      clearForm();
+
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Save'),
+                  )
+                ],
+              );
+            },
+          );
         },
         child: const Icon(Icons.add),
       ),

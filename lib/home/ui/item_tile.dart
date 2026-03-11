@@ -1,59 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:simple_bloc_example/data/mock/item_mock.dart';
+import 'package:simple_bloc_example/data/model/item_model.dart';
 import 'package:simple_bloc_example/home/bloc/home_bloc.dart';
 
 class ItemTile extends StatelessWidget {
+  final List<Item> items;
   final HomeBloc homeBloc;
-  const ItemTile({super.key, required this.homeBloc});
+
+  const ItemTile({
+    super.key,
+    required this.items,
+    required this.homeBloc,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: mockItems.length,
-      itemBuilder: ((context, index) {
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+
         return Card(
-          child: Column(
-            children: [
-              Text(
-                '${index + 1}, ${mockItems[index].name.toUpperCase()}',
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const Divider(),
-              Image.network(mockItems[index].imageUrl),
-              Text(
-                mockItems[index].description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'PRICE: \$${mockItems[index].price}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.green,
-                    ),
+          margin: const EdgeInsets.all(10),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                Text(
+                  '${index + 1}. ${item.name.toUpperCase()}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  IconButton(
+                ),
+                const Divider(),
+                Image.network(item.imageUrl),
+                const SizedBox(height: 10),
+                Text(
+                  item.description,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'PRICE: \$${item.price}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.green,
+                      ),
+                    ),
+                    IconButton(
                       onPressed: () {
-                        homeBloc
-                            .add(HomeItemsRemovedEvent(item: mockItems[index]));
+                        homeBloc.add(
+                          HomeItemsRemovedEvent(item: item),
+                        );
                       },
                       icon: const Icon(
                         Icons.delete,
                         color: Colors.red,
-                      ))
-                ],
-              ),
-            ],
+                      ),
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
         );
-      }),
+      },
     );
   }
 }
