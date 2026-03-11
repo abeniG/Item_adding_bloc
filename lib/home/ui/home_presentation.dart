@@ -61,7 +61,14 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: const Text('HOME PAGE'),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        titleTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
         bloc: homeBloc,
@@ -84,7 +91,10 @@ class _HomeState extends State<Home> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.blueAccent,
+        icon: const Icon(Icons.add),
+        label: const Text("Add Item"),
         onPressed: () {
           showDialog(
             context: context,
@@ -128,7 +138,6 @@ class _HomeState extends State<Home> {
             },
           );
         },
-        child: const Icon(Icons.add),
       ),
     );
   }
